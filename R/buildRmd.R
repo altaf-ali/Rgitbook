@@ -16,7 +16,6 @@
 #' @export
 buildRmd <- function(dir = getwd(), clean=FALSE, log.dir, log.ext='.txt', ...) {
 	dir <- normalizePath(dir)
-	bib <- NULL
 	
 	if(!exists('statusfile')) {
 		statusfile <- '.rmdbuild'
@@ -49,26 +48,17 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir, log.ext='.txt', ...) {
 		rmds <- c(rmds, referenceFiles)
 	}
 	
-	knitenv <- new.env()
-	bibs <- list.files(dir[1], '.bib$', ignore.case=TRUE)
-	if(length(bibs) > 0) {
-		newbib <- read.bibtex(paste0(dir, '/', bibs[1]))
-		if(clean | is.null(bib)) {
-			if(length(bibs) > 1) { #TODO: support more than one bib file
-				warning(paste0('More than one BibTex file found. Using ', bibs[1]))
-			}
-			cleanbib()
-			bib <- newbib
-		} else {
-			# This will any new references to the bib object
-			newbibs <- names(newbib)[!names(newbib) %in% names(bib)]
-			for(i in newbibs) {
-				bib[i] <- newbib[i]
-			}
-		}
-		assign('bib', bib, envir=knitenv)
+	buildRmdToMd <- function(dir, filename, clean) {
+	  package_dir <- system.file(package="Rgitbook")
+	  script_name <- file.path(package_dir, "exec", "render.R")
+	  source_cmd <- sprintf('\'source("%s")\'', script_name)
+	  clean_opt <- ifelse(clean, "TRUE", "FALSE")
+	  render_cmd <- sprintf('\'rmarkdown_render("%s", "%s", %s)\'', dir, filename, clean_opt)
+	  cmd <- paste("Rscript", "-e", source_cmd, "-e", render_cmd)
+	  message(sprintf("Running: %s", cmd))
+	  system(cmd)  
 	}
-
+	
 	for(j in rmds) {
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
@@ -79,8 +69,8 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir, log.ext='.txt', ...) {
 		}
 		oldwd <- setwd(dirname(j))
 		tryCatch({
-			knit(basename(j), sub('.Rmd$', '.md', basename(j), ignore.case=TRUE), 
-				 envir=knitenv, ...)
+		  message(sprintf("Rendering: %s", j))
+		  buildRmdToMd(dir, j, clean)
 		}, finally={ setwd(oldwd) })
 		if(!missing(log.dir)) { sink() }
 	}
@@ -88,6 +78,8 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir, log.ext='.txt', ...) {
 	rmdinfo <- finfo
 	last.run <- Sys.time()
 	last.R.version <- R.version
-	save(rmdinfo, last.run, last.R.version, bib, file=statusfile)
+	message(sprintf("Writing statusfile: %s", statusfile))
+	#save(rmdinfo, last.run, last.R.version, bib, file=statusfile)
+	save(rmdinfo, last.run, last.R.version, file=statusfile)
 	invisible(TRUE)
 }

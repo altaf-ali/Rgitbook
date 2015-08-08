@@ -15,11 +15,13 @@
 buildGitbook <- function(source.dir=getwd(),
 						 out.dir=paste0(getwd(), '/_book'),
 						 buildRmd = TRUE,
+						 clean=FALSE, 
+						 log.dir=".log", 
 						 format,
 						 gitbook.params, ...) {
 	if(buildRmd) {
 		message('Building R markdown files...')
-		buildRmd(source.dir, ...)
+		buildRmd(source.dir, clean=clean, log.dir=log.dir, ...)
 		message('R Markdown files successfully built!')
 	}
 	
@@ -28,6 +30,7 @@ buildGitbook <- function(source.dir=getwd(),
 	buildCmd <- 'build'
 	if(!missing(format)) { buildCmd <- format }
 	cmd <- paste0("gitbook ", buildCmd, " ", source.dir, " --output=", out.dir)
+	message(sprintf("Running gitbook: %s", cmd))
 	#if(!missing(title)) { cmd <- paste0(cmd, ' --title="', title, '"') }
 	#if(!missing(intro)) { cmd <- paste0(cmd, ' --intro="', intro, '"') }
 	#if(!missing(github)) { cmd <- paste0(cmd, ' --github=', github) }
