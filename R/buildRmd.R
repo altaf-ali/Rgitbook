@@ -14,7 +14,7 @@
 #' @param log.ext if log files are saved, the file extension to use.
 #' @param ... other parameters passed to \code{\link{knit}}.
 #' @export
-buildRmd <- function(dir = getwd(), clean=FALSE, log.dir, log.ext='.txt', ...) {
+buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt', ...) {
 	dir <- normalizePath(dir)
 	
 	if(!exists('statusfile')) {
@@ -48,29 +48,22 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir, log.ext='.txt', ...) {
 		rmds <- c(rmds, referenceFiles)
 	}
 	
-	buildRmdToMd <- function(dir, filename, clean) {
-	  package_dir <- system.file(package="Rgitbook")
-	  script_name <- file.path(package_dir, "exec", "render.R")
-	  source_cmd <- sprintf('\'source("%s")\'', script_name)
-	  clean_opt <- ifelse(clean, "TRUE", "FALSE")
-	  render_cmd <- sprintf('\'rmarkdown_render("%s", "%s", %s)\'', dir, filename, clean_opt)
-	  cmd <- paste("Rscript", "-e", source_cmd, "-e", render_cmd)
-	  message(sprintf("Running: %s", cmd))
-	  system(cmd)  
-	}
-	
 	for(j in rmds) {
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
 			log.dir <- normalizePath(log.dir)
 			logfile <- paste0(log.dir, '/', sub('.Rmd$', log.ext, j, ignore.case=TRUE))
 			dir.create(dirname(logfile), recursive=TRUE, showWarnings=FALSE)
-			sink(logfile)
 		}
 		oldwd <- setwd(dirname(j))
 		tryCatch({
-		  message(sprintf("Rendering: %s", j))
-		  buildRmdToMd(dir, j, clean)
+		  message(sprintf("Rendering %s", j))
+		  render_cmd <- sprintf('\'Rgitbook::markdownRender("%s", "%s")\'', dir, j)
+		  cmd <- paste("Rscript", "-e", render_cmd)
+		  message(cmd)
+		  result = system(cmd, intern = TRUE)
+		  cat(paste0(result, "\n"))
+		  
 		}, finally={ setwd(oldwd) })
 		if(!missing(log.dir)) { sink() }
 	}

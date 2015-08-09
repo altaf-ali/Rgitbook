@@ -16,7 +16,7 @@ buildGitbook <- function(source.dir=getwd(),
 						 out.dir=paste0(getwd(), '/_book'),
 						 buildRmd = TRUE,
 						 clean=FALSE, 
-						 log.dir=".log", 
+						 log.dir, 
 						 format,
 						 gitbook.params, ...) {
 	if(buildRmd) {
