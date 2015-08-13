@@ -37,23 +37,4 @@ buildGitbook <- function(source.dir=getwd(),
 	#if(mathjax) { cmd <- paste0(cmd, " --plugins plugin-mathjax") }
 	if(!missing(gitbook.params)) { cmd <- paste0(cmd, " ", gitbook.params)}
 	system(cmd)
-	
-	# Post-process hack to fix broken img urls.
-	# https://github.com/GitbookIO/gitbook/issues/99
-	# Will also fix links to the Introduction
-	# https://github.com/GitbookIO/gitbook/issues/113
-	#dirs <- list.dirs(out.dir, recursive=FALSE, full.names=FALSE)
-	#for(i in seq_along(dirs)) {
-		files <- list.files(out.dir, '*.html', recursive=TRUE)
-		for(j in seq_along(files)) {
-			fconn <- file(paste0(out.dir, '/', files[j]))
-			file <- readLines(fconn)
-			close(fconn)
-			#file <- gsub(paste0(dirs[i], '/', dirs[i], '/'), '', file)
-			file <- gsub('./">', './index.html">', file)
-			fconn <- file(paste0(out.dir, '/', files[j]))
-			writeLines(file, fconn)
-			close(fconn)
-		}
-	#}
 }

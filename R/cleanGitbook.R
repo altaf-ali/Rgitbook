@@ -8,46 +8,53 @@ cleanGitbook <- function(source.dir=getwd(), out.dir=file.path(getwd(), '_book')
   
   delete_dir <- function(dir) {
     if (dir.exists(dir)) {
-      message(sprintf("removing directory %s", dir))
+      message(sprintf("removing directory: %s", dir))
       unlink(dir, recursive = TRUE, force = TRUE)
     }
   }
 
   delete_file <- function(file) {
     if (file.exists(file)) {
-      message(sprintf("removing %s", file))
+      message(sprintf("removing file: %s", file))
       unlink(file)
     }
   }
   
-  delete_generated_files <- function(input.ext, output.ext) {
-    input.re = sprintf("\\.%s$", input.ext)
-    output.re = sprintf(".%s", output.ext)
-  
-    files <- list.files(source.dir[1], input.re, ignore.case=TRUE, recursive=TRUE, full.names=TRUE)
-    generated_files <- lapply(files, function(f) sub(input.re, output.re, f, ignore.case=TRUE))
-    lapply(generated_files, delete_file)
+  delete_all <- function(input.pattern, 
+                         output.subst = NULL, 
+                         all.files = FALSE,
+                         include.dirs = FALSE) {
+    
+    files <- list.files(source.dir[1], 
+                        input.pattern, 
+                        ignore.case=TRUE, 
+                        recursive=TRUE, 
+                        full.names=TRUE, 
+                        all.files = all.files,
+                        include.dirs = include.dirs)
+    
+    if (is.null(output.subst))
+      out_files = files
+    else
+      out_files <- lapply(files, function(f) sub(input.pattern, output.subst, f, ignore.case=TRUE))
+    
+    lapply(out_files, ifelse(include.dirs, delete_dir, delete_file))
   }
 
   # delete output dirtory and default log directory
   delete_dir(out.dir)  
-  delete_dir(file.path(source.dir, ".log"))
+  delete_all("^.log$", all.files = TRUE, include.dirs = TRUE)
+  
+  # delete all figures
+  delete_all("^figure$", include.dirs = TRUE)
+
+  # delete all generated files
+  delete_all("\\.Rmd$", "_files", include.dirs = TRUE)
+  delete_all("\\.md$", ".html")
+  delete_all("\\.Rmd$", ".md")
   
   # delete rmbuild
-  rmdbuild_files <- list.files(source.dir[1], "^\\.rmdbuild$", recursive=TRUE, full.names=TRUE, all.files = TRUE)
-  lapply(rmdbuild_files, delete_file)
-
-  # delete all figures
-  tmp_dirs <- list.files(source.dir[1], "^figure$", recursive=TRUE, full.names=TRUE, include.dirs = TRUE)
-  lapply(tmp_dirs, delete_dir)
-  
-  # delete all generated files
-  delete_generated_files("md", "html")
-  delete_generated_files("Rmd", "md")
-  
-  # HACK  
-  tmp_dirs <- list.files(source.dir[1], "(lab|solutions)_files", recursive=TRUE, full.names=TRUE, include.dirs = TRUE)
-  lapply(tmp_dirs, delete_dir)
+  delete_all("^\\.rmdbuild$", all.files = TRUE)
   
   invisible(0)
 }

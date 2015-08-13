@@ -47,7 +47,7 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		# This will ensure the reference files are built last.
 		rmds <- c(rmds, referenceFiles)
 	}
-	
+
 	for(j in rmds) {
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
@@ -57,10 +57,9 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		}
 		oldwd <- setwd(dirname(j))
 		tryCatch({
-		  message(sprintf("Rendering %s", j))
-		  render_cmd <- sprintf('\'Rgitbook::markdownRender("%s", "%s")\'', dir, j)
+		  message(sprintf("\nRendering %s", j))
+		  render_cmd <- sprintf('\'Rgitbook::markdownRender("%s")\'', j)
 		  cmd <- paste("Rscript", "-e", render_cmd)
-		  message(cmd)
 		  result = system(cmd, intern = TRUE)
 		  cat(paste0(result, "\n"))
 		  
@@ -72,7 +71,6 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 	last.run <- Sys.time()
 	last.R.version <- R.version
 	message(sprintf("Writing statusfile: %s", statusfile))
-	#save(rmdinfo, last.run, last.R.version, bib, file=statusfile)
 	save(rmdinfo, last.run, last.R.version, file=statusfile)
 	invisible(TRUE)
 }
