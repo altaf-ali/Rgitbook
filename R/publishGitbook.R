@@ -22,10 +22,10 @@ publishGitbook <- function(repo = NULL,
     git_response <- system("git remote --verbose", intern = TRUE)
     if (length(git_response) != 2) { stop('Unexpected output from Git.')}
     git_remote <- git_response[1]
-    pattern <- "^origin\\shttps:\\/\\/github.com\\/(.*?)\\.git\\s\\(.*\\)"
+    pattern <- "^origin\\s(git\\@|https:\\/\\/)github\\.com(\\/|:)(.*?)\\.git\\s\\(.*\\)"
     matches <- regmatches(git_remote, regexec(pattern, git_remote))
-    if (length(matches) != 1 || length(matches[[1]]) != 2) { stop('Failed to get repository name from Git.')}
-    repo = matches[[1]][2]
+    if (length(matches) != 1 || length(matches[[1]]) != 4) { stop('Failed to get repository name from Git.')}
+    repo = matches[[1]][4]
   }
 
 	test <- system('git --version', ignore.stderr=TRUE, ignore.stdout=TRUE, show.output.on.console=FALSE)
