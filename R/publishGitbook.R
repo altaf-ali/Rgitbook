@@ -20,16 +20,20 @@ publishGitbook <- function(repo = NULL,
   if (is.null(repo)) {
     # get repo name from git
     git_response <- system("git remote --verbose", intern = TRUE)
-    if (length(git_response) != 2) { stop('Unexpected output from Git.')}
-    git_remote <- git_response[1]
-    pattern <- "^origin\\s(git\\@|https:\\/\\/)github\\.com(\\/|:)(.*?)\\.git\\s\\(.*\\)"
-    matches <- regmatches(git_remote, regexec(pattern, git_remote))
-    if (length(matches) != 1 || length(matches[[1]]) != 4) { stop('Failed to get repository name from Git.')}
-    repo = matches[[1]][4]
+    if (length(git_response) < 2) { stop('Unexpected output from Git.')}
+    pattern <- "^origin\\s(git\\@|https:\\/\\/)github\\.com(\\/|:)(.*?)\\.git\\s\\(fetch)"
+    for (line in git_response) {
+      matches <- regmatches(line, regexec(pattern, line))
+      if (length(matches) == 1 && length(matches[[1]]) == 4) {
+        repo = matches[[1]][4]
+        break
+      }
+    }
+    if (is.null(repo)) { stop('Failed to get repository name from Git.') }
   }
 
 	test <- system('git --version', ignore.stderr=TRUE, ignore.stdout=TRUE, show.output.on.console=FALSE)
-	if(test != 0) { stop('Git does not appear to be installed.')}
+	if(test != 0) { stop('Git does not appear to be installed.') }
 	cmd <- paste0(
 		"cd ", out.dir, " \n",
 		"git init \n",
