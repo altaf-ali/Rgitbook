@@ -24,17 +24,20 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 	
 	rmds <- list.files(dir[1], '.rmd$', ignore.case=TRUE, recursive=TRUE, full.names=TRUE)
 	finfo <- file.info(rmds)
-	
-	referenceFiles <- c()
 
-	# Handle reference files separately. They will be built everytime to ensure
-	# the list is up-to-date
-	referenceFilesPos <- grep('references.Rmd$', rmds, ignore.case=TRUE)
-	if(length(referenceFilesPos) > 0) {
-		referenceFiles <- rmds[referenceFilesPos]
-		rmds <- rmds[-referenceFilesPos]
+	# move matching pattern to end of list
+	moveToEnd <- function(l, pattern) {
+	  pos <- grep(pattern, l, ignore.case=TRUE)
+	  if(length(pos) > 0) {
+	    subset <- l[pos]
+	    l <- c(l[-pos], subset)
+	  }
+	  return(l)
 	}
 	
+	rmds <- moveToEnd(rmds, 'references.Rmd$')
+	rmds <- moveToEnd(rmds, 'SUMMARY.Rmd$')
+
 	if(!clean & file.exists(statusfile)) {
 		load(statusfile)
 		newfiles <- row.names(finfo)[!row.names(finfo) %in% row.names(rmdinfo)]
@@ -43,11 +46,6 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		rmds <- c(newfiles, existing)
 	}
 	
-	if(length(referenceFiles) > 0) {
-		# This will ensure the reference files are built last.
-		rmds <- c(rmds, referenceFiles)
-	}
-
 	for(j in rmds) {
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
