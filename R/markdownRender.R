@@ -10,6 +10,8 @@
 markdownRender <- function(input_file) {
   library(methods)
 
+  knitr::opts_chunk$set(comment = NA, width = 100)
+  
   rmarkdown::render(input_file, 
                     output_file = sub('.Rmd$', '.md', basename(input_file), ignore.case=TRUE), 
                     output_format = "Rgitbook::md_gitbook_document", 

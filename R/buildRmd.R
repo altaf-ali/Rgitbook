@@ -19,7 +19,7 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 	
 	if(!exists('statusfile')) {
 		statusfile <- '.rmdbuild'
-		statusfile <- paste0(dir, '/', statusfile)
+		statusfile <- file.path(dir, statusfile)
 	}
 	
 	rmds <- list.files(dir[1], '.rmd$', ignore.case=TRUE, recursive=TRUE, full.names=TRUE)
@@ -50,13 +50,14 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
 			log.dir <- normalizePath(log.dir)
-			logfile <- paste0(log.dir, '/', sub('.Rmd$', log.ext, j, ignore.case=TRUE))
+			logfile <- file.path(log.dir, sub('.Rmd$', log.ext, j, ignore.case=TRUE))
 			dir.create(dirname(logfile), recursive=TRUE, showWarnings=FALSE)
 		}
 		oldwd <- setwd(dirname(j))
 		tryCatch({
 		  message(sprintf("\nRendering %s", j))
 		  render_cmd <- sprintf('\'Rgitbook::markdownRender("%s")\'', j)
+		  message(sprintf("\nDEBUG: render_cmd = %s", render_cmd))
 		  cmd <- paste("Rscript", "-e", render_cmd)
 		  result = system(cmd, intern = TRUE)
 		  cat(paste0(result, "\n"))
