@@ -45,8 +45,7 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		existing <- existing[finfo[existing,]$mtime > rmdinfo[existing,]$mtime]
 		rmds <- c(newfiles, existing)
 	}
-	message(sprintf("rmds[1] = %s", rmds[1]))
-	
+
 	for(j in rmds) {
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
@@ -58,7 +57,6 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		tryCatch({
 		  message(sprintf("\nRendering %s", j))
 		  render_cmd <- sprintf('\'Rgitbook::markdownRender("%s")\'', j)
-		  message(sprintf("\nDEBUG: render_cmd = %s", render_cmd))
 		  cmd <- paste("Rscript", "-e", render_cmd)
 		  result = system(cmd, intern = TRUE)
 		  cat(paste0(result, "\n"))
