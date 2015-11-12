@@ -4,7 +4,7 @@
 #' @param out.dir location of the built book.
 #' @export
 cleanGitbook <- function(source.dir=getwd(), out.dir=file.path(getwd(), '_book')) {
-  source.dir <- normalizePath(source.dir)
+  source.dir <- normalizePath(source.dir, winslash = "/")
   
   delete_dir <- function(dir) {
     if (dir.exists(dir)) {

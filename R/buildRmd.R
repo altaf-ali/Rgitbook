@@ -15,7 +15,7 @@
 #' @param ... other parameters passed to \code{\link{knit}}.
 #' @export
 buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt', ...) {
-	dir <- normalizePath(dir)
+	dir <- normalizePath(dir, winslash = "/")
 	
 	if(!exists('statusfile')) {
 		statusfile <- '.rmdbuild'
@@ -45,11 +45,12 @@ buildRmd <- function(dir = getwd(), clean=FALSE, log.dir = NULL, log.ext='.txt',
 		existing <- existing[finfo[existing,]$mtime > rmdinfo[existing,]$mtime]
 		rmds <- c(newfiles, existing)
 	}
+	message(sprintf("rmds[1] = %s", rmds[1]))
 	
 	for(j in rmds) {
 		if(!missing(log.dir)) {
 			dir.create(log.dir, showWarnings=FALSE, recursive=TRUE)
-			log.dir <- normalizePath(log.dir)
+			log.dir <- normalizePath(log.dir, winslash = "/")
 			logfile <- file.path(log.dir, sub('.Rmd$', log.ext, j, ignore.case=TRUE))
 			dir.create(dirname(logfile), recursive=TRUE, showWarnings=FALSE)
 		}

@@ -8,7 +8,7 @@
 #' 
 #' @export
 initGitbook <- function(dir=getwd()) {
-	dir <- normalizePath(dir)
+	dir <- normalizePath(dir, winslash = "/")
 	checkForGitbook(quiet=TRUE)
 	oldwd <- setwd(dir)
 	test <- system(paste0('gitbook init ', dir))
